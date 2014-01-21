@@ -1,0 +1,42 @@
+$(function () {
+    $.getScript("http://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js");
+
+    var topTable = $('section table.table tbody').first();
+    topTable.children().first().remove(); // remove QR code
+    var balanceRow = topTable.children('tr:nth-child(1)');
+    var balanceElement = balanceRow.children('td:nth-child(2)');
+    var DOGEaddress = window.location.href.split("/").slice(-1)[0];
+
+    $.get('http://dogechain.info/chain/Dogecoin/q/addressbalance/'+DOGEaddress, function (dogechain_info) {
+	var DOGEbalance = dogechain_info;
+	$.getJSON('http://pubapi.cryptsy.com/api.php?method=singlemarketdata&marketid=132', function (pubapi_cryptsy_com) {
+	    var recentTrades = $(pubapi_cryptsy_com['return']['markets']['DOGE']['recenttrades']);
+	    var DOGE_BTC = recentTrades.map(function (ind, val) {
+		return parseFloat(val['price']);
+	    }).get().reduce(function (prev, cur, ind, arr) {
+		return prev + cur;
+	    })/recentTrades.length;
+
+	    $.getJSON('https://api.bitcoinaverage.com/all', function (api_bitcoinaverage_com) {
+		var BTC_USD = api_bitcoinaverage_com['USD']['averages']['ask'];
+		var DOGEprice = DOGE_BTC*BTC_USD;
+		var USD_val = (DOGEbalance*DOGEprice).toFixed(5);
+		var DOGE_val = parseFloat(balanceElement.html()).toFixed(5);
+
+		balanceElement.html(DOGE_val+' DOGE / '+USD_val+' USD'); 
+		balanceRow.after('<tr><td>DOGE Price</td><td>'+DOGEprice.toFixed(6)+' USD</td></tr>');
+	    });
+	});
+    });
+
+
+    var transactionTable = $('div.table-responsive table tbody');
+    transactionTable.html(transactionTable.children('tr').get().reverse());
+    transactionTable.prepend(transactionTable.children('tr:last-child').get());
+
+    var transactionRows = transactionTable.children('tr');
+    transactionRows.slice(1).map(function (ind, val) {
+	var theDate = $(val).children('td:nth-child(3)');
+	theDate.html(theDate.html()+' / '+$.timeago(theDate.html()));
+    });
+});

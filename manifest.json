@@ -1,0 +1,24 @@
+{
+    "manifest_version": 2,
+    "name": "DogeChain Transaction Sorter",
+    "version": "1.0",
+    "description": "This extension allows you to sort transactions on dogechain.info.",
+    "permissions": ["http://*/*"],
+    "content_scripts": [
+        {
+            "matches": [
+                "http://*.dogechain.info/*"
+            ],
+            "js": [
+                "jquery.js",
+		"jquery.timeago.js",
+                "dogesort.js"
+            ],
+	    "run_at": "document_end"
+        }
+    ],
+    "web_accessible_resources": [
+	"jquery.js",
+	"jquery.timeago.js"
+    ]
+}
